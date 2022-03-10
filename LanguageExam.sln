@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31729.503
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageExam", "LanguageExam\LanguageExam.csproj", "{4E50725B-36D9-4984-B1CA-6CDB5D26113E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyLanguage", "MyLanguage\MyLanguage.csproj", "{7C3485F3-F805-45F8-85CA-D33E0442597C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4E50725B-36D9-4984-B1CA-6CDB5D26113E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E50725B-36D9-4984-B1CA-6CDB5D26113E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E50725B-36D9-4984-B1CA-6CDB5D26113E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E50725B-36D9-4984-B1CA-6CDB5D26113E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C3485F3-F805-45F8-85CA-D33E0442597C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C3485F3-F805-45F8-85CA-D33E0442597C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C3485F3-F805-45F8-85CA-D33E0442597C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C3485F3-F805-45F8-85CA-D33E0442597C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A287CEB3-41F5-489B-8D93-DFFA3B888ADC}
+	EndGlobalSection
+EndGlobal

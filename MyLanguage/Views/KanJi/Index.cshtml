@@ -1,0 +1,505 @@
+﻿@{
+
+    ViewData["Title"] = "Student Page";
+
+}
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/jszip.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx.js"></script>
+
+
+
+
+<script src="~/jquery/jquery.js"></script>
+
+
+<button id="btnDownloadExcel" class="btn btn-success" style="margin-right:5px;">Excel Download</button>
+<button id="pdfKanJi" class="btn btn-success" style="margin-right:5px;">Preview PDF </button>
+<br />
+
+
+
+<div style="margin-bottom:20px;">
+
+    <input type="file" id="input" accept=".xls,.xlsx,.ods" style="float:left;" />
+
+    <button id="btnSave" class="btn btn-primary" style="float:right;margin-right:10px;">Save</button>
+
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal">
+        Launch demo modal
+    </button>
+    <!-- Modal -->
+    <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Options Export PDF</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group row">
+                                <label class="col-form-label col-6">Level From</label>
+                                <select class="form-control col-4" id="slcLevelFrom">
+                                    <option value="1">N5</option>
+                                    <option value="2">N4</option>
+                                    <option value="3">N3</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group row">
+                                <label class="col-form-label col-5">Level To</label>
+                                <select class="form-control col-5" id="slcLevelTo">
+                                    <option value="1">N5</option>
+                                    <option value="2">N4</option>
+                                    <option value="3">N3</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group row">
+                                <label class="col-form-label col-4">KanJi Number</label>
+                                <select class="form-control col-2" id="slcKJNumber">
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                    <option value="30">30</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="200">200</option>
+                                    <option value="300">300</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group row">
+                                <label class="col-form-label col-4">The answer</label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="theAnswer" id="inlineRadio1" value="Yes">
+                                    <label class="form-check-label" for="inlineRadio1">Yes</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="theAnswer" id="inlineRadio2" checked value="No">
+                                    <label class="form-check-label" for="inlineRadio2">No</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group row">
+                                <label class="col-form-label col-4">Use for</label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="useFor" id="inlineRadio1" value="study">
+                                    <label class="form-check-label" for="inlineRadio1">Study</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="useFor" id="inlineRadio2" checked value="exam">
+                                    <label class="form-check-label" for="inlineRadio2">Exam</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group row">
+                                <label class="col-form-label col-4">How many tests ?</label>
+                                <select class="form-control col-2" id="slcHowManyTest">
+                                    <option value="01">01</option>
+                                    <option value="02">02</option>
+                                    <option value="03">03</option>
+                                    <option value="04">04</option>
+                                    <option value="05">05</option>
+                                    <option value="06">06</option>
+                                    <option value="07">07</option>
+                                    <option value="08">08</option>
+                                    <option value="09">09</option>
+                                    <option value="10">10</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btnExportPDF" type="button" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<table id="tblMain" class="table table-bordered table-striped">
+
+    <thead></thead>
+
+    <tbody></tbody>
+
+</table>
+
+
+
+<script type="text/javascript">
+
+    var _oKanJis = [],
+        _oKanJi = null,
+        _headers = [];
+
+
+
+    $(document).ready(function () {
+
+        Init();
+
+    });
+
+    function Init() {
+
+        _oKanJi = NewKanJiObj();
+
+
+
+        $("#btnDownloadExcel").click(function () {
+
+            GenerateAndDownloadExcel();
+
+        });
+
+        $("#btnSave").click(function () {
+
+            Save();
+
+        });
+
+        $("#input").on("change", function (e) {
+
+            var file = e.target.files[0];
+
+            if (!file) return;
+
+
+
+            var FR = new FileReader();
+
+            FR.onload = function (e) {
+
+                var data = new Uint8Array(e.target.result);
+
+
+                var workbook = XLSX.read(data, { type: 'array' });
+
+                var firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                console.log(firstSheet);
+                var result = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                GenerateTable(result);
+
+            };
+
+            FR.readAsArrayBuffer(file);
+
+            $("#input").val("");
+
+        });
+
+        $("#btnExportPDF").click(function () {
+            var kanJiNumber = $("#slcKJNumber").val();
+            var radioAnswer = $('input[name=theAnswer]:checked').val();
+
+            var lvFrom = $("#slcLevelFrom").val();
+            var lvTo = $("#slcLevelTo").val();
+            var useFor = $('input[name=useFor]:checked').val();
+            var testNumber = $("#slcHowManyTest").val();
+            var objKanJiOptions = {
+                KanJiNumber: kanJiNumber,
+                IsAnswer: radioAnswer == "Yes" ? true : false,
+                LevelFrom: lvFrom,
+                LevelTo: lvTo,
+                UseFor: useFor,
+                TestNumber: testNumber
+            };
+
+            //var a = document.createElement("a");
+            //document.body.appendChild(a);
+            //a.style = "display: none";
+            //$.ajax({
+            //    url: "/KanJi/GenerateAndDownloadPDFZip",
+            //    type: "post",
+            //    data: objKanJiOptions,
+            //    xhrFields: {
+            //        responseType: 'blob'
+            //    },
+            //    success: function (data) {
+            //        var file = new Blob([data], { type: 'application/pdf' });
+            //        var fileURL = URL.createObjectURL(file);
+            //        a.href = fileURL;
+            //        a.download = "TestKanJi.zip";
+            //        a.click();
+            //        window.URL.revokeObjectURL(fileURL);
+            //    }
+            //});
+
+            var a = document.createElement("a");
+            document.body.appendChild(a);
+            a.style = "display: none";
+            if (testNumber == "1" || testNumber == "01") {
+                $.ajax({
+                    url: "/KanJi/GenerateAndDownloadPDFItem",
+                    type: "post",
+                    data: objKanJiOptions,
+                    // data: objectData,
+                    //contentType: "application/json; charset=utf-8",
+                    xhrFields: {
+                        responseType: 'blob'
+                    },
+                    success: function (data) {
+                        var file = new Blob([data], { type: 'application/pdf' });
+                        var fileURL = URL.createObjectURL(file);
+                        a.href = fileURL;
+                        //a.download = "TestKanJi.zip";
+                       // a.click();
+                        //window.URL.revokeObjectURL(fileURL);
+                        window.open(fileURL);
+                    }
+                });
+            }
+            else {
+                $.ajax({
+                    url: "/KanJi/GenerateAndDownloadPDF",
+                    type: "post",
+                    data: objKanJiOptions,
+                    // data: objectData,
+                    //contentType: "application/json; charset=utf-8",
+                    xhrFields: {
+                        responseType: 'blob'
+                    },
+                    success: function (data) {
+                        var file = new Blob([data], { type: 'application/pdf' });
+                        var fileURL = URL.createObjectURL(file);
+                        a.href = fileURL;
+                        a.download = "TestKanJi.zip";
+                        a.click();
+                        window.URL.revokeObjectURL(fileURL);
+                        // window.open(fileURL);
+                    }
+                });
+            }
+
+        })
+        $("#pdfKanJi").click(function () {
+            $('#modal').modal('show')
+        })
+
+    }
+
+    function GenerateAndDownloadExcel() {
+
+        var kanJiId = 0,
+
+            name = "";
+
+
+
+        $.ajax({
+
+            url: "../KanJi/GenerateAndDownloadExcel?kanJiId=" + kanJiId + "&hanViet=" + name,
+
+            //data: { 'Id': groupId },
+
+            type: 'GET',
+
+            success: function (result) {
+
+                ExcelFromBase64("Kanji List Excel.xlsx", result);
+
+            },
+
+            error: function (result) {
+
+            }
+
+        });
+
+    }
+
+    function Reset() {
+
+        _oKanJis = [];
+
+        _oKanJi = null;
+
+        _headers = [];
+
+        $("#tblMain thead tr,#tblMain tbody tr").remove();
+
+    }
+
+    function GenerateTable(exportStatus) {
+
+        Reset();
+
+
+
+        if (exportStatus.length > 0) {
+
+            var sTemp = "";
+
+            var headers = exportStatus[0];
+            console.log(headers);
+            sTemp = "<tr>";
+
+            sTemp += "<th style='text-align:center;vertical-align:middle;'>Serial</th>";
+
+
+
+            $.map(headers, function (header) {
+
+                _headers.push(header);
+
+                sTemp += "<th style='text-align:center;vertical-align:middle;min-width:100px;'>" + header + "</th>";
+
+            });
+
+            sTemp += "</tr>";
+
+            $("#tblMain thead").append(sTemp);
+
+
+
+            exportStatus = exportStatus.slice(1);
+            console.log(exportStatus);
+            exportStatus = exportStatus != null ? exportStatus.filter(x => x.length > 0) : exportStatus;
+
+            var nSL = 0;
+
+            for (var i = 0; i < exportStatus.length; i++) {
+
+                nSL++;
+
+
+                _oKanJi = NewKanJiObj();
+
+
+                sTemp = "<tr>";
+
+                sTemp += "<td style='text-align:center;vertical-align:middle;'>" + nSL + "</td>";
+
+
+
+                var valueIndex = 0;
+
+                var es = exportStatus[i];
+
+                for (var j = 0; j < _headers.length; j++) {
+
+                    propValue = es[j];
+
+                    propValue = typeof (propValue) == "undefined" ? "" : propValue;
+
+
+
+                    var propName = _headers[valueIndex];
+
+
+
+                    _oKanJi[propName] = propValue;
+
+
+                    sTemp += "<td style='text-align:center;vertical-align:middle;' title='" + _headers[valueIndex] + "'>" + propValue + "</td>";
+
+                    valueIndex++;
+
+                }
+
+                sTemp += "</tr>";
+
+                $("#tblMain tbody").append(sTemp);
+
+                _oKanJis.push(_oKanJi);
+
+            }
+
+        }
+
+    }
+
+    function ExcelFromBase64(fileName, bytesBase64) {
+
+        var link = document.createElement('a');
+
+        link.download = fileName;
+
+        link.href = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + bytesBase64;
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        document.body.removeChild(link);
+
+    }
+
+    function Save() {
+
+        if (_oKanJis.length > 0) {
+
+            var ajaxRequest = $.ajax({
+
+                url: "../KanJi/SaveKanJis/",
+
+                type: "POST",
+
+                data: { kanJiDtos: _oKanJis },
+
+                dataType: "json",
+
+                beforeSend: function () {
+
+
+
+                },
+
+            });
+
+            ajaxRequest.done(function (data) {
+
+                alert("Successfully saved.");
+
+            });
+
+            ajaxRequest.fail(function (jqXHR, textStatus) { alert("Error Found"); alerts('error title', 'error info', 'error'); });
+
+        }
+
+        else {
+
+            alert("No Data Found.");
+
+        }
+
+    }
+
+    function NewKanJiObj() {
+
+        var oKanJi = {
+            KanJi: "",
+            HanViet: "",
+            Level: "",
+            VietNam: ""
+        };
+
+        return oKanJi;
+
+    }
+</script>
