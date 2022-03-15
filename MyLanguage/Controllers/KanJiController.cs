@@ -16,6 +16,7 @@ using MyLanguage.Data;
 using IronOcr;
 using System.IO.Compression;
 using static MyLanguage.Common.Enum;
+using Microsoft.Extensions.Logging;
 
 namespace MyLanguage.Controllers
 {
@@ -23,14 +24,19 @@ namespace MyLanguage.Controllers
     {
         IKanJiService _kanJiService = null;
         MyLanguageDbContext _dbContext = null;
+        private readonly ILogger<KanJiController> _log;
         List<KanJi> _kanJis = new List<KanJi>();
-        public KanJiController(IKanJiService kanJiService, MyLanguageDbContext dbContext)
+        public KanJiController(IKanJiService kanJiService, MyLanguageDbContext dbContext , ILogger<KanJiController> log)
         {
             _kanJiService = kanJiService;
             _dbContext = dbContext;
+            _log = log;
         }
         public IActionResult Index()
         {
+            var kanJisByParamSearch = _kanJiService.GetKanJis();
+           
+            ViewBag.List = kanJisByParamSearch;
             return View();
         }
         public JsonResult SaveKanJis(List<KanJiDto> kanJiDtos)
@@ -54,10 +60,10 @@ namespace MyLanguage.Controllers
             }
             return Convert.ToBase64String(fileContents);
         }
-
         [HttpPost]
         public IActionResult GenerateAndDownloadPDF(ExportPDFOption exportPDFOption)
         {
+            _log.LogInformation("Test ne");
             try
             {
                 var kanJisByParamSearch = _kanJiService.GetKanJisPDFByParamsSearch(exportPDFOption);
@@ -69,8 +75,6 @@ namespace MyLanguage.Controllers
                 throw;
             }
         }
-
-
         [HttpPost]
         public IActionResult GenerateAndDownloadPDFItem(ExportPDFOption exportPDFOption)
         {
@@ -87,44 +91,61 @@ namespace MyLanguage.Controllers
                 "<th style = 'border: 1px solid #000;' > Âm hán việt </th>" +
                 "<th style = 'border: 1px solid #000;' > Ý nghĩa </th>" +
                 "</tr>";
-            string headerHtml =
+            string headerHtml0=
                "<table style = 'width:75%;border-collapse:collapse; border: 1px solid;margin:0px 30px 0px 100px;border-bottom: none !important'>" +
                "<tr style = 'border: 1px solid #000;border-bottom: none !important'>" +
-               "<th style = 'border: 1px solid #000;width: 15%;border-bottom: none !important'> STT </th>" +
+               "<th style = 'border: 1px solid #000;width: 10%;border-bottom: none !important'> STT </th>" +
                "<th style = 'border: 1px solid #000;width: 30%;border-bottom: none !important'> KanJi </th> " +
-               "<th style = 'border: 1px solid #000;width: 25%;border-bottom: none !important' > Âm hán việt </th>" +
+               "<th style = 'border: 1px solid #000;width: 30%;border-bottom: none !important' > Âm hán việt </th>" +
                "<th style = 'border: 1px solid #000;width: 30%;border-bottom: none !important' > Ý nghĩa </th>" +
                "</tr></table>";
             #endregion
             try
             {
                 var kanJisByParamSearch = _kanJiService.GetKanJisPDFByParamsSearch(exportPDFOption);
-                kanJisByParamSearch.ShuffleRNGCrypto();
+               // kanJisByParamSearch.ShuffleRNGCrypto();
                 List<InMemoryFileDto> inMemoryFiles = new List<InMemoryFileDto>();
                 var strDateTime = DateTime.Now.ToString("yyyyMMddhhmm");
                 var extensinonFile = 0 + "_" + strDateTime + ".pdf";
-                string pdfBodyNoAnswer = GenerateBodyKanJiPDF(kanJisByParamSearch, Answer.NoAnswer);
-                string pdfNoAnswerHtml = pdfBodyNoAnswer;
+                string pdfBodyNoAnswer = _kanJiService.GenerateBodyKanJiPDF(kanJisByParamSearch, Answer.NoAnswer, exportPDFOption);
                 HtmlToPdf converter = new HtmlToPdf();
+                #region HeaderHTML
+                converter.Options.DisplayHeader = true;
+                converter.Header.DisplayOnFirstPage = true;
+                converter.Header.DisplayOnOddPages = true;
+                converter.Header.DisplayOnEvenPages = true;
+                converter.Header.Height =35;
 
-                //converter.Options.DisplayHeader = true;
-                //converter.Header.DisplayOnFirstPage = true;
-                //converter.Header.DisplayOnOddPages = true;
-                //converter.Header.DisplayOnEvenPages = true;
-                //converter.Header.Height = 20;
-                //PdfHtmlSection headerPDF = new PdfHtmlSection(headerHtml, "");
-                //headerPDF.AutoFitHeight = HtmlToPdfPageFitMode.AutoFit;
-                //converter.Header.Add(headerPDF);
-
-                SelectPdf.PdfDocument docNoAnswer = converter.ConvertHtmlString(pdfNoAnswerHtml);
+                // add some html content to the header
+                PdfHtmlSection headerHtml = new PdfHtmlSection(GenerateHeaderKanJiPDF(),"");
+                headerHtml.AutoFitHeight = HtmlToPdfPageFitMode.AutoFit;
+                converter.Header.Add(headerHtml);
+                #endregion
+                #region Footer HTML
+                // footer settings
+                converter.Options.DisplayFooter = true;
+                converter.Footer.DisplayOnFirstPage = true;
+                converter.Footer.DisplayOnOddPages = true;
+                converter.Footer.DisplayOnEvenPages = true;
+                converter.Footer.Height = 40;
+                string date = DateTime.Now.ToString("yyyyMMdd");
+              // add some html content to the footer
+                PdfHtmlSection footerHtml = new PdfHtmlSection(date, "Test");
+                footerHtml.AutoFitHeight = HtmlToPdfPageFitMode.AutoFit;
+                converter.Footer.Add(footerHtml);
+                // page numbers can be added using a PdfTextSection object
+                PdfTextSection text = new PdfTextSection(0, 10, "Page: {page_number}/{total_pages}  ", new System.Drawing.Font("Arial", 8));
+                text.HorizontalAlign = PdfTextHorizontalAlign.Right;
+                converter.Footer.Add(text);
+                #endregion
+                converter.Options.MarginTop = 0;
+                converter.Options.MarginBottom = 0;
+                converter.Options.MarginLeft = 10;
+                converter.Options.MarginRight = 10;
+                SelectPdf.PdfDocument docNoAnswer = converter.ConvertHtmlString(pdfBodyNoAnswer);
                 byte[] pdfNoAnswer = docNoAnswer.Save();
                 docNoAnswer.Close();
-                InMemoryFileDto inMemoryFileNoAnswer = new InMemoryFileDto
-                {
-                    FileName = "Test_KanJi_" + extensinonFile,
-                    Content = pdfNoAnswer
-                };
-               FileResult fileResult = new FileContentResult(pdfNoAnswer, "application/pdf");
+                FileResult fileResult = new FileContentResult(pdfNoAnswer, "application/pdf");
                 return fileResult;
             }
             catch (Exception ex)
@@ -132,7 +153,6 @@ namespace MyLanguage.Controllers
                 throw;
             }
         }
-
         public IActionResult ReadTextFromImage()
         {
             string imgText = "";
@@ -152,8 +172,10 @@ namespace MyLanguage.Controllers
 
             //};
             var result = new IronTesseract();//.Read(path + "/" + fileList[1]);
-            result.Language = OcrLanguage.Vietnamese;
-            var test = result.Read(path + "/" + fileList[1]);
+            result.Language = OcrLanguage.Japanese;
+            result.Language = OcrLanguage.JapaneseAlphabet;
+
+            var test = result.Read(path + "/" + fileList[0]);
             imgText = test.Text;
             ViewBag.Text = imgText;
             return View();
@@ -187,6 +209,23 @@ namespace MyLanguage.Controllers
                 result += row;*/
             }
             return result + endTableBody;
+        }
+
+        private string GenerateHeaderKanJiPDF()
+        {
+            string htmlHeader = string.Empty;
+            htmlHeader  =
+             "<table style = 'width:75%;border-collapse:collapse; border: 1px solid;margin:0px 30px 0px 100px;'>" +
+             "<tr style = 'border: 1px solid #000;border-bottom: none !important'>" +
+             "<th style = 'border: 1px solid #000;width: 10%;'> Name: </th>" +
+             "<th style = 'border: 1px solid #000;width: 30%;'>  </th> " +
+             "</tr>" +
+             "<tr style = 'border: 1px solid #000;border-bottom: none !important'>" +
+             "<th style = 'border: 1px solid #000;width: 10%;'> Class: </th>" +
+             "<th style = 'border: 1px solid #000;width: 30%;'>  </th> " +
+             "</tr>" +
+             "</table>";
+            return htmlHeader;
         }
 
     }

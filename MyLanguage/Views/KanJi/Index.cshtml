@@ -10,147 +10,194 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx.js"></script>
 
-
-
-
 <script src="~/jquery/jquery.js"></script>
 
+<div id="table-loading" class="loader ui-widget-overlay bg-white opacity-80" style="position:absolute;display:none">
+    <img src="~/files/loader-02-xs.gif" />
+</div>
 
-<button id="btnDownloadExcel" class="btn btn-success" style="margin-right:5px;">Excel Download</button>
-<button id="pdfKanJi" class="btn btn-success" style="margin-right:5px;">Preview PDF </button>
-<br />
+<style>
+    .ui-widget-overlay img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin: -26px 0 0 -26px;
+    }
+    .ui-widget-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    .bg-white {
+        background: #fff;
+    }
+    .opacity-80,
+    .no-shadow.transparent.btn:hover i,
+    .ui-datepicker-current.ui-priority-secondary {
+        opacity: .80 !important;
+        -moz-opacity: .80 !important;
+        filter: alpha(opacity: 80) !important;
+    }
+
+</style>
+
+
+    <div style="margin-bottom:10px">
+        <button id="btnDownloadExcel" class="btn btn-success" style="margin-right:5px;">Excel Download</button>
+        <button id="pdfKanJi" class="btn btn-success" style="margin-right:5px; margin-left:5px;">Preview PDF </button>
+    </div>
+
+
+    @if(ViewBag.List.Count < 1)
+{
+    <p>Error</p>
+}
 
 
 
-<div style="margin-bottom:20px;">
+    <div style="margin-bottom:20px;">
 
-    <input type="file" id="input" accept=".xls,.xlsx,.ods" style="float:left;" />
+        <input type="file" id="input" accept=".xls,.xlsx,.ods" style="float:left;" />
 
-    <button id="btnSave" class="btn btn-primary" style="float:right;margin-right:10px;">Save</button>
-
-    <!-- Button trigger modal -->
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal">
-        Launch demo modal
-    </button>
-    <!-- Modal -->
-    <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Options Export PDF</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="form-group row">
-                                <label class="col-form-label col-6">Level From</label>
-                                <select class="form-control col-4" id="slcLevelFrom">
-                                    <option value="1">N5</option>
-                                    <option value="2">N4</option>
-                                    <option value="3">N3</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="form-group row">
-                                <label class="col-form-label col-5">Level To</label>
-                                <select class="form-control col-5" id="slcLevelTo">
-                                    <option value="1">N5</option>
-                                    <option value="2">N4</option>
-                                    <option value="3">N3</option>
-                                </select>
-                            </div>
-                        </div>
+        <button id="btnSave" class="btn btn-primary" style="float:right;margin-right:10px;">Save</button>
+        <!-- Modal -->
+        <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Options Export PDF</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
                     </div>
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="form-group row">
-                                <label class="col-form-label col-4">KanJi Number</label>
-                                <select class="form-control col-2" id="slcKJNumber">
-                                    <option value="10">10</option>
-                                    <option value="20">20</option>
-                                    <option value="30">30</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                    <option value="200">200</option>
-                                    <option value="300">300</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="form-group row">
-                                <label class="col-form-label col-4">The answer</label>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="theAnswer" id="inlineRadio1" value="Yes">
-                                    <label class="form-check-label" for="inlineRadio1">Yes</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="theAnswer" id="inlineRadio2" checked value="No">
-                                    <label class="form-check-label" for="inlineRadio2">No</label>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="form-group row">
+                                    <label class="col-form-label col-6">Level From</label>
+                                    <select class="form-control col-4" id="slcLevelFrom">
+                                        <option value="1">N5</option>
+                                        <option value="2">N4</option>
+                                        <option value="3">N3</option>
+                                    </select>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="form-group row">
-                                <label class="col-form-label col-4">Use for</label>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="useFor" id="inlineRadio1" value="study">
-                                    <label class="form-check-label" for="inlineRadio1">Study</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="useFor" id="inlineRadio2" checked value="exam">
-                                    <label class="form-check-label" for="inlineRadio2">Exam</label>
+                            <div class="col-6">
+                                <div class="form-group row">
+                                    <label class="col-form-label col-5">Level To</label>
+                                    <select class="form-control col-5" id="slcLevelTo">
+                                        <option value="1">N5</option>
+                                        <option value="2">N4</option>
+                                        <option value="3">N3</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="form-group row">
-                                <label class="col-form-label col-4">How many tests ?</label>
-                                <select class="form-control col-2" id="slcHowManyTest">
-                                    <option value="01">01</option>
-                                    <option value="02">02</option>
-                                    <option value="03">03</option>
-                                    <option value="04">04</option>
-                                    <option value="05">05</option>
-                                    <option value="06">06</option>
-                                    <option value="07">07</option>
-                                    <option value="08">08</option>
-                                    <option value="09">09</option>
-                                    <option value="10">10</option>
-                                </select>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group row">
+                                    <label class="col-form-label col-4">KanJi Number/Test</label>
+                                    <select class="form-control col-2" id="slcKJNumber">
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                        <option value="30">30</option>
+                                        <option value="50">50</option>
+                                        <option value="60">60</option>
+                                        <option value="100">100</option>
+                                        <option value="300">300</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group row">
+                                    <label class="col-form-label col-4">The answer</label>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="theAnswer" id="inlineRadio1" value="Yes">
+                                        <label class="form-check-label" for="inlineRadio1">Yes</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="theAnswer" id="inlineRadio2" checked value="No">
+                                        <label class="form-check-label" for="inlineRadio2">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group row">
+                                    <label class="col-form-label col-4">Hide Column: </label>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="hideColumn" id="inlineRadio1" value="hideKanJi">
+                                        <label class="form-check-label" for="inlineRadio1">KanJi</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="hideColumn" id="inlineRadio2" checked value="hideAmHVNghia">
+                                        <label class="form-check-label" for="inlineRadio2">Âm hán việt / Ý nghĩa</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group row">
+                                    <label class="col-form-label col-4">Use for</label>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="useFor" id="inlineRadio1" value="study">
+                                        <label class="form-check-label" for="inlineRadio1">Study</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="useFor" id="inlineRadio2" checked value="exam">
+                                        <label class="form-check-label" for="inlineRadio2">Exam</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group row">
+                                    <label class="col-form-label col-4">How many tests ?</label>
+                                    <select class="form-control col-2" id="slcHowManyTest">
+                                        <option value="01">01</option>
+                                        <option value="02">02</option>
+                                        <option value="03">03</option>
+                                        <option value="04">04</option>
+                                        <option value="05">05</option>
+                                        <option value="06">06</option>
+                                        <option value="07">07</option>
+                                        <option value="08">08</option>
+                                        <option value="09">09</option>
+                                        <option value="10">10</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button id="btnExportPDF" type="button" class="btn btn-primary">Save</button>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button id="btnExportPDF" type="button" class="btn btn-primary">Save</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<table id="tblMain" class="table table-bordered table-striped">
+    <table id="tblMain" class="table table-bordered table-striped">
 
-    <thead></thead>
+        <thead></thead>
 
-    <tbody></tbody>
+        <tbody></tbody>
 
-</table>
-
+    </table>
 
 
-<script type="text/javascript">
+
+    <script type="text/javascript">
 
     var _oKanJis = [],
         _oKanJi = null,
@@ -214,8 +261,10 @@
         });
 
         $("#btnExportPDF").click(function () {
+            $('#modal').modal('hide');
             var kanJiNumber = $("#slcKJNumber").val();
             var radioAnswer = $('input[name=theAnswer]:checked').val();
+            var radioHideColumn = $('input[name=hideColumn]:checked').val();
 
             var lvFrom = $("#slcLevelFrom").val();
             var lvTo = $("#slcLevelTo").val();
@@ -227,9 +276,10 @@
                 LevelFrom: lvFrom,
                 LevelTo: lvTo,
                 UseFor: useFor,
-                TestNumber: testNumber
+                TestNumber: testNumber,
+                IsHideKanJi: radioHideColumn == "hideKanJi" ? true : false
             };
-
+            console.log(objKanJiOptions);
             //var a = document.createElement("a");
             //document.body.appendChild(a);
             //a.style = "display: none";
@@ -253,11 +303,15 @@
             var a = document.createElement("a");
             document.body.appendChild(a);
             a.style = "display: none";
-            if (testNumber == "1" || testNumber == "01") {
+            // "/KanJi/GenerateAndDownloadPDFItem",
+            $('#table-loading').css("display", "block");
+            if ((testNumber == "1" || testNumber == "01") && radioAnswer == "No") {
+
                 $.ajax({
-                    url: "/KanJi/GenerateAndDownloadPDFItem",
+                    url: '@Url.Action("GenerateAndDownloadPDFItem","KanJi")',
                     type: "post",
-                    data: objKanJiOptions,
+                    data: { exportPDFOption: objKanJiOptions } ,
+                    //dataType: "json",
                     // data: objectData,
                     //contentType: "application/json; charset=utf-8",
                     xhrFields: {
@@ -267,8 +321,9 @@
                         var file = new Blob([data], { type: 'application/pdf' });
                         var fileURL = URL.createObjectURL(file);
                         a.href = fileURL;
+                        $('#table-loading').css("display", "none");
                         //a.download = "TestKanJi.zip";
-                       // a.click();
+                        // a.click();
                         //window.URL.revokeObjectURL(fileURL);
                         window.open(fileURL);
                     }
@@ -276,9 +331,11 @@
             }
             else {
                 $.ajax({
-                    url: "/KanJi/GenerateAndDownloadPDF",
+                    url:'@Url.Action("GenerateAndDownloadPDF","KanJi")',
                     type: "post",
-                    data: objKanJiOptions,
+                    data: { exportPDFOption: objKanJiOptions } ,
+                    //data: objKanJiOptions,
+                    //dataType: "json",
                     // data: objectData,
                     //contentType: "application/json; charset=utf-8",
                     xhrFields: {
@@ -290,6 +347,7 @@
                         a.href = fileURL;
                         a.download = "TestKanJi.zip";
                         a.click();
+                        $('#table-loading').css("display", "none");
                         window.URL.revokeObjectURL(fileURL);
                         // window.open(fileURL);
                     }
@@ -356,7 +414,7 @@
             var sTemp = "";
 
             var headers = exportStatus[0];
-            console.log(headers);
+
             sTemp = "<tr>";
 
             sTemp += "<th style='text-align:center;vertical-align:middle;'>Serial</th>";
@@ -502,4 +560,4 @@
         return oKanJi;
 
     }
-</script>
+    </script>

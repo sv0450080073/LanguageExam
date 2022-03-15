@@ -18,8 +18,10 @@ namespace MyLanguage.Services
         List<KanJi> GetKanJisPDFByParamsSearch(ExportPDFOption paramSearch);
         List<InMemoryFileDto> GeneratePDFZip(List<KanJi> kanJis, ExportPDFOption paramSearch, int testNumber = 0);
         public byte[] GenerateMutilPDFZip(List<KanJi> kanJis, ExportPDFOption paramSearch);
+        public string GenerateBodyKanJiPDF(List<KanJi> kanJis, Answer answer, ExportPDFOption paramSearch);
         List<KanJi> FilterKanjs(List<KanJi> kanJis, Answer answer);
         bool IsExistKanJiInDb(KanJi kanJi);
+
     }
     public class KanJiService : IKanJiService
     {
@@ -55,37 +57,49 @@ namespace MyLanguage.Services
 
         public List<InMemoryFileDto> GeneratePDFZip(List<KanJi> kanJis, ExportPDFOption paramSearch, int testNumber = 0)
         {
-            #region Declare string html
-            string headerHtml =
-               "<table style = 'width:75%;border-collapse:collapse; border: 1px solid;margin:0px 30px 0px 100px;'>" +
-               "<tr style = 'border: 1px solid #000;'>" +
-               "<th style = 'border: 1px solid #000;width: 15%'> STT </th>" +
-               "<th style = 'border: 1px solid #000;width: 30%'> KanJi </th> " +
-               "<th style = 'border: 1px solid #000;width: 25%' > Âm hán việt </th>" +
-               "<th style = 'border: 1px solid #000;width: 30%' > Ý nghĩa </th>" +
-               "</tr></table>";
-            #endregion
             try
             {
-                kanJis.ShuffleRNGCrypto();
+                //kanJis.ShuffleRNGCrypto();
                 List<InMemoryFileDto> inMemoryFiles = new List<InMemoryFileDto>();
                 var strDateTime = DateTime.Now.ToString("yyyyMMddhhmm");
                 var extensinonFile = testNumber + "_" + strDateTime + ".pdf";
-                string pdfBodyNoAnswer = GenerateBodyKanJiPDF(kanJis, Answer.NoAnswer);
+                string pdfBodyNoAnswer = GenerateBodyKanJiPDF(kanJis, Answer.NoAnswer, paramSearch);
                 string pdfNoAnswerHtml = pdfBodyNoAnswer;
                 HtmlToPdf converter = new HtmlToPdf();
-                //converter.Options.DisplayHeader = true;
-                //converter.Header.DisplayOnFirstPage = true;
-                //converter.Header.DisplayOnOddPages = true;
-                //converter.Header.DisplayOnEvenPages = true;
-                //converter.Header.Height = 50;
-                //PdfHtmlSection headerPDF = new PdfHtmlSection(headerHtml, "");
-                //headerPDF.AutoFitHeight = HtmlToPdfPageFitMode.AutoFit;
-                //converter.Header.Add(headerPDF);
-                converter.Options.MarginTop = 10;
-                converter.Options.MarginBottom = 10;
+                #region HeaderHTML
+                converter.Options.DisplayHeader = true;
+                converter.Header.DisplayOnFirstPage = true;
+                converter.Header.DisplayOnOddPages = true;
+                converter.Header.DisplayOnEvenPages = true;
+                converter.Header.Height = 35;
+                // add some html content to the header
+                PdfHtmlSection headerHtml = new PdfHtmlSection(GenerateHeaderKanJiPDF(), "");
+                headerHtml.AutoFitHeight = HtmlToPdfPageFitMode.AutoFit;
+                converter.Header.Add(headerHtml);
+                #endregion
+                #region Footer HTML
+                // footer settings
+                converter.Options.DisplayFooter = true;
+                converter.Footer.DisplayOnFirstPage = true;
+                converter.Footer.DisplayOnOddPages = true;
+                converter.Footer.DisplayOnEvenPages = true;
+                converter.Footer.Height = 40;
+                string date = DateTime.Now.ToString("yyyyMMdd");
+                // add some html content to the footer
+                PdfHtmlSection footerHtml = new PdfHtmlSection(date, "Test");
+                footerHtml.AutoFitHeight = HtmlToPdfPageFitMode.AutoFit;
+                converter.Footer.Add(footerHtml);
+                // page numbers can be added using a PdfTextSection object
+                PdfTextSection text = new PdfTextSection(0, 10, "Page: {page_number}/{total_pages}  ", new System.Drawing.Font("Arial", 8));
+                text.HorizontalAlign = PdfTextHorizontalAlign.Right;
+                converter.Footer.Add(text);
+                #endregion
+                converter.Options.MarginTop = 0;
+                converter.Options.MarginBottom = 0;
                 converter.Options.MarginLeft = 10;
                 converter.Options.MarginRight = 10;
+
+
 
                 SelectPdf.PdfDocument docNoAnswer = converter.ConvertHtmlString(pdfNoAnswerHtml);
                 byte[] pdfNoAnswer = docNoAnswer.Save();
@@ -95,10 +109,9 @@ namespace MyLanguage.Services
                     FileName = "Test_KanJi_" + extensinonFile,
                     Content = pdfNoAnswer
                 };
-
                 if (paramSearch.IsAnswer)
                 {
-                    string pdfBodyHasAnswer = GenerateBodyKanJiPDF(kanJis, Answer.HasAnswer);
+                    string pdfBodyHasAnswer = GenerateBodyKanJiPDF(kanJis, Answer.HasAnswer, paramSearch);
                     string pdfHasAnswerHtml = pdfBodyHasAnswer;
                     SelectPdf.PdfDocument docHasAnswer = converter.ConvertHtmlString(pdfHasAnswerHtml);
                     byte[] pdfHasAnswer = docHasAnswer.Save();
@@ -141,7 +154,7 @@ namespace MyLanguage.Services
                 foreach (var item in kanJiDtos)
                 {
                     var kanJiItem = CreateKanJiItem(item);
-                    /*   if (!IsExistKanJiInDb(kanJiItem))*/
+                     if (!IsExistKanJiInDb(kanJiItem))
                     kanJis.Add(kanJiItem);
                 }
             }
@@ -153,6 +166,17 @@ namespace MyLanguage.Services
         {
             if (string.IsNullOrEmpty(kanJi.KanJiWord)) return true;
             return _dbContext.KanJis.Any(x => x.KanJiWord == kanJi.KanJiWord);
+            /*bool isKanJiExistDb = _dbContext.KanJis.Any(x => x.KanJiWord == kanJi.KanJiWord);
+            if(isKanJiExistDb)
+            {
+                var kanji = _dbContext.KanJis.Where(x => x.KanJiWord == kanJi.KanJiWord).FirstOrDefault();
+                if(kanji.VNMean)
+
+            }
+            else
+            {
+                return isKanJiExistDb;
+            }*/
         }
         private KanJi CreateKanJiItem(KanJiDto data)
         {
@@ -162,9 +186,9 @@ namespace MyLanguage.Services
                 if (data != null)
                 {
                     kanJi.KanJiWord = data.KanJi;
-                    kanJi.HanViet = data.HanViet;
+                    kanJi.HanViet = HandlerString.FirstCharToUpper(data.HanViet);
                     kanJi.Level = data.LevelNumber;
-                    kanJi.VNMean = data.VietNam;
+                    kanJi.VNMean = HandlerString.FirstCharToUpper(data.VietNam);
                 }
                 return kanJi;
             }
@@ -199,7 +223,7 @@ namespace MyLanguage.Services
                 throw;
             }
         }
-        private string GenerateBodyKanJiPDF(List<KanJi> kanJis, Answer answer)
+        public string GenerateBodyKanJiPDF(List<KanJi> kanJis, Answer answer, ExportPDFOption paramSearch)
         {
             string result = string.Empty;
             string htmlEndTag = "</table> </body> </html>";
@@ -208,12 +232,20 @@ namespace MyLanguage.Services
             {
                 int kanJiNumberPerPage = 50;
                 int kanjiNumberTotal = kanJis.Count();
-                int loopNumber = kanjiNumberTotal / kanJiNumberPerPage;
                 result += htmlStartTag;
-                for (int i = 0; i < loopNumber; i++)
+                if (kanjiNumberTotal > kanJiNumberPerPage) //50 60 //100
                 {
-                    var kanjiPerPage = kanJis.Skip(i * kanJiNumberPerPage).Take(kanJiNumberPerPage).ToList();
-                    result += GenerateRowBodyKanJiPDF(kanjiPerPage, answer, i == loopNumber - 1 ? false : true);
+                    var loopNumber = Math.Ceiling(kanjiNumberTotal*1.0 / kanJiNumberPerPage);
+                    for (int i = 0; i < loopNumber; i++)
+                    {
+                        var kanjiPerPage = kanJis.Skip(i * kanJiNumberPerPage).Take(kanJiNumberPerPage).ToList();
+                        result += GenerateRowPageBodyPerTestKanJiPDF(kanjiPerPage, answer, i == loopNumber - 1 ? false : true, kanJiNumberPerPage , paramSearch);
+
+                    }
+                }
+                else //10
+                {
+                    result += GenerateRowPageBodyPerTestKanJiPDF(kanJis, answer, false , kanJiNumberPerPage, paramSearch);
                 }
             }
             catch (Exception ex)
@@ -222,15 +254,15 @@ namespace MyLanguage.Services
             }
             return result + htmlEndTag;
         }
-        private string GenerateRowBodyKanJiPDF(List<KanJi> kanJis, Answer answer, bool isBreakPage)
+        private string GenerateRowPageBodyPerTestKanJiPDF(List<KanJi> kanJis, Answer answer, bool isBreakPage , int itemPerPage, ExportPDFOption paramSearch)
         {
             #region HTML          
             string htmlContent =
                 "<table style = 'width:75%;border-collapse:collapse; border: 1px solid;margin:10px 30px 0px 100px;'>" +
                 "<tr style = 'border: 1px solid #000;font-size: 20px;'>" +
-                "<th style = 'border: 1px solid #000;width:15%;'> STT </th>" +
+                "<th style = 'border: 1px solid #000;width:10%;'> STT </th>" +
                 "<th style = 'border: 1px solid #000;width:30%;'> KanJi </th> " +
-                "<th style = 'border: 1px solid #000;width:25%;' > Âm hán việt </th>" +
+                "<th style = 'border: 1px solid #000;width:30%;' > Âm hán việt </th>" +
                 "<th style = 'border: 1px solid #000;width:30%;' > Ý nghĩa </th>" +
                 "</tr>";
             #endregion
@@ -242,17 +274,37 @@ namespace MyLanguage.Services
                 string result = string.Empty;
                 result += breakPage + htmlContent;
                 string row = string.Empty;
+                while (kanJis.Count < itemPerPage)
+                {
+                    kanJis.Add(new KanJi());
+                }
                 foreach (var (item, index) in kanJis.Select((value, i) => (value, i)))
                 {
-                    var hanViet = answer == Answer.NoAnswer ? "" : item.HanViet;
-                    var vnMean = answer == Answer.NoAnswer ? "" : item.VNMean;
+                    string hanViet = item.HanViet;
+                    string vnMean = item.VNMean;
+                    string kanJi = item.KanJiWord;
+                    if(answer == Answer.NoAnswer)
+                    {
+                        if (paramSearch.IsHideKanJi)
+                        {
+                            kanJi = string.Empty;
+                        }
+                        else
+                        {
+                            hanViet = string.Empty;
+                            vnMean = string.Empty;
+                        }
+                    }
+                  
+                    //var hanViet = answer == Answer.NoAnswer && paramSearch.IsHideKanJi ? "" : item.HanViet;
+                    //var vnMean = answer == Answer.NoAnswer ? "" : item.VNMean;
                     int stt = index + 1;
                     row = "<table style = 'width:75%;border-collapse:collapse; border: 1px solid;margin:0px 30px 0px 100px;'>" +
                         "<tr style = 'text-align: center;'>" +
-                        "<td style = 'border: 1px solid #000;height: 25px;width:15%;'>" + stt + "</td> " +
-                        "<td style = 'border: 1px solid #000;height: 25px;width:30%;'> " + item.KanJiWord + "</td>" +
-                        "<td style = 'border: 1px solid #000;height: 25px;width:25%;'> " + hanViet + " </td>" +
-                        "<td style = 'border: 1px solid #000;height: 25px;width:30%;'> " + vnMean + " </td>" +
+                        "<td style = 'border: 1px solid #000;height: 25px;width:10%;font-weight: 200;'>" + stt + "</td> " +
+                        "<td style = 'border: 1px solid #000;height: 25px;width:30%;font-weight: 200;'> " + kanJi + "</td>" +
+                        "<td style = 'border: 1px solid #000;height: 25px;width:30%;font-weight: 200;'> " + hanViet + " </td>" +
+                        "<td style = 'border: 1px solid #000;height: 25px;width:30%;font-weight: 200;'> " + vnMean + " </td>" +
                         "</tr></table>";
                     result += row;
                     //row =
@@ -263,6 +315,7 @@ namespace MyLanguage.Services
                     //    " <th style = 'border: 1px solid #000;height: 25px;width: 30%;'> " + vnMean + " </th>" +
                     //    " </tr>";
                 }
+              
                 return result + breakPageEnd;
             }
             catch (Exception ex)
@@ -270,6 +323,26 @@ namespace MyLanguage.Services
                 throw;
             }
         }
+
+
+
+        private string GenerateHeaderKanJiPDF()
+        {
+            string htmlHeader = string.Empty;
+            htmlHeader =
+             "<table style = 'width:75%;border-collapse:collapse; border: 1px solid;margin:0px 30px 0px 100px;'>" +
+             "<tr style = 'border: 1px solid #000;border-bottom: none !important'>" +
+             "<th style = 'border: 1px solid #000;width: 10%;'> Name: </th>" +
+             "<th style = 'border: 1px solid #000;width: 30%;'>  </th> " +
+             "</tr>" +
+             "<tr style = 'border: 1px solid #000;border-bottom: none !important'>" +
+             "<th style = 'border: 1px solid #000;width: 10%;'> Class: </th>" +
+             "<th style = 'border: 1px solid #000;width: 30%;'>  </th> " +
+             "</tr>" +
+             "</table>";
+            return htmlHeader;
+        }
+
         public class InMemoryFile
         {
             public string FileName { get; set; }

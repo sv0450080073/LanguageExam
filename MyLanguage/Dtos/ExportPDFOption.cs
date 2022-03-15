@@ -13,6 +13,7 @@ namespace MyLanguage.Dtos
         public int LevelTo { get; set; }
         public string UseFor { get; set; }
         public int TestNumber { get; set; }
+        public bool IsHideKanJi { get; set; }
         public int KanJiToTal
         {
             get
