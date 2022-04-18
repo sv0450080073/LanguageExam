@@ -58,7 +58,7 @@ namespace MyLanguage
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=KanJi}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }

@@ -230,7 +230,7 @@ namespace MyLanguage.Services
             string htmlStartTag = "<html> <body>";
             try
             {
-                int kanJiNumberPerPage = 50;
+                int kanJiNumberPerPage = 40;
                 int kanjiNumberTotal = kanJis.Count();
                 result += htmlStartTag;
                 if (kanjiNumberTotal > kanJiNumberPerPage) //50 60 //100
@@ -300,7 +300,7 @@ namespace MyLanguage.Services
                     //var vnMean = answer == Answer.NoAnswer ? "" : item.VNMean;
                     int stt = index + 1;
                     row = "<table style = 'width:75%;border-collapse:collapse; border: 1px solid;margin:0px 30px 0px 100px;'>" +
-                        "<tr style = 'text-align: center;'>" +
+                        "<tr style = 'text-align: center;height: 30px;font-size: 21px'>" +
                         "<td style = 'border: 1px solid #000;height: 25px;width:10%;font-weight: 200;'>" + stt + "</td> " +
                         "<td style = 'border: 1px solid #000;height: 25px;width:30%;font-weight: 200;'> " + kanJi + "</td>" +
                         "<td style = 'border: 1px solid #000;height: 25px;width:30%;font-weight: 200;'> " + hanViet + " </td>" +
