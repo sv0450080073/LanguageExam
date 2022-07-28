@@ -28,26 +28,34 @@ namespace MyLanguage.Models
         private static DriveService GetGoogleDriveService()
         {
             UserCredential credential;
-
-            using (var stream = new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
+            try
             {
-                // The file token.json stores the user's access and refresh tokens, and is created
-                // automatically when the authorization flow completes for the first time.
-                string credPath = "SavedToken";
-                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    scopes,
-                    "user",
-                    CancellationToken.None,
-                    new FileDataStore(credPath, true)).Result;
+                using (var stream = new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
+                {
+                    // The file token.json stores the user's access and refresh tokens, and is created
+                    // automatically when the authorization flow completes for the first time.
+                    string credPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                    credPath = Path.Combine(credPath, "./credentials/credentials.json"); ;
+                    credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                          GoogleClientSecrets.Load(stream).Secrets,
+                          scopes,
+                          "user",
+                          CancellationToken.None,
+                          new FileDataStore(credPath, true)).Result;
+                }
+
+                // Create Drive API service.
+                return new DriveService(new BaseClientService.Initializer
+                {
+                    HttpClientInitializer = credential,
+                    ApplicationName = applicationName,
+                });
+            }
+            catch (Exception ex)
+            {
+                return null;
             }
 
-            // Create Drive API service.
-            return new DriveService(new BaseClientService.Initializer
-            {
-                HttpClientInitializer = credential,
-                ApplicationName = applicationName,
-            });
         }
 
         /// <summary>

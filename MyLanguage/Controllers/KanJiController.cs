@@ -16,7 +16,9 @@ using MyLanguage.Data;
 using IronOcr;
 using System.IO.Compression;
 using static MyLanguage.Common.Enum;
-using Microsoft.Extensions.Logging;
+using log4net.Repository.Hierarchy;
+using log4net;
+using MyLanguage.ManagerLog;
 
 namespace MyLanguage.Controllers
 {
@@ -24,16 +26,19 @@ namespace MyLanguage.Controllers
     {
         IKanJiService _kanJiService = null;
         MyLanguageDbContext _dbContext = null;
-        private readonly ILogger<KanJiController> _log;
+        private readonly ILoggerManager _logger;
+
         List<KanJi> _kanJis = new List<KanJi>();
-        public KanJiController(IKanJiService kanJiService, MyLanguageDbContext dbContext , ILogger<KanJiController> log)
+        public KanJiController(IKanJiService kanJiService, MyLanguageDbContext dbContext, ILoggerManager logger)
         {
             _kanJiService = kanJiService;
             _dbContext = dbContext;
-            _log = log;
+            _logger = logger;
+            this._logger.Info(typeof(string), string.Format("KanJiController: {0} - ", DateTime.Now, "Contructor Init() "));
         }
         public IActionResult Index()
         {
+            _logger.Info(typeof(string), string.Format("KanJiController: {0} - ", DateTime.Now, "TEST NEK  "));
             var kanJisByParamSearch = _kanJiService.GetKanJis();
            
             ViewBag.List = kanJisByParamSearch;
@@ -63,7 +68,7 @@ namespace MyLanguage.Controllers
         [HttpPost]
         public IActionResult GenerateAndDownloadPDF(ExportPDFOption exportPDFOption)
         {
-            _log.LogInformation("Test ne");
+           // _log.LogInformation("Test ne");
             try
             {
                 var kanJisByParamSearch = _kanJiService.GetKanJisPDFByParamsSearch(exportPDFOption);
@@ -72,6 +77,7 @@ namespace MyLanguage.Controllers
             }
             catch (Exception ex)
             {
+                _logger.Error(ex.GetType(), $"GenerateAndDownloadPDF Error when execute Handler:", ex);
                 throw;
             }
         }

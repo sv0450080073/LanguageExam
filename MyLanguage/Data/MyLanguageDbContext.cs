@@ -19,5 +19,10 @@ namespace MyLanguage.Data
             base.OnModelCreating(modelBuilder);
         }
         public DbSet<KanJi> KanJis { get; set; }
+        public DbSet<ExamForm> ExamForm { get; set; }
+        public DbSet<ExamFormDetail> ExamFormDetail { get; set; }
+        public DbSet<IncorrectAnswerForm> IncorrectAnswerForm { get; set; }
+        public DbSet<IncorrectAnswerFormDetail> IncorrectAnswerFormDetail { get; set; }
+        public DbSet<UserScores> UserScores { get; set; }
     }
 }

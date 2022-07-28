@@ -1,0 +1,135 @@
+﻿@model MyLanguage.Dtos.TestKanJiFormDto
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<script src="~/jquery/jquery.js"></script>
+<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Options Export PDF</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group row">
+                            <label class="col-form-label col-6">Your Score:<span id="yourscore"></span></label>
+
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group row">
+                            <label class="col-form-label col-5">IncorrectAnswer: <span id="incorrectAnswer"></span>/<span id="totalQuestion"></span></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group row">
+                            <a href="/KanJi/">Done</a>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group row">
+                            <a class="btn-sm col-5" >See Detail: </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button id="btnExportPDF" type="button" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+<form>
+    <span id="example"></span>
+    <p style="text-align:center">@Model.ExamForm.ExamName </p>
+    @if (Model.ExamFormDetails.Count > 0)
+    {
+        @foreach (var (item, index) in Model.ExamFormDetails.Select((value, i) => (value, i)))
+        {
+            <p style="text-align:center;margin:5px;font-size:30px">@item.KanJiWord</p>
+            <div><input type="hidden" id="@("KanJiId"+ (index + 1))" value="@item.KanJiID" /></div>
+            <div><input type="hidden" id="@("ExamFormId"+ (index + 1))" value="@item.ExamForm_ID" /></div>
+            <div class="form-row">
+                <div class="col-3">
+                    <input type="text"  class="form-control @("THV"+ (index + 1))" id="@("THV"+ (index + 1))" placeholder="âm hán việt">
+                </div>
+                <div class="col-3">
+                    <input type="text"  class="form-control  @("TN"+ (index + 1))" id="@("TN"+ (index + 1))" placeholder="nghĩa">
+                </div>
+                <div class="col-3">
+                    <input type="text"  class="form-control  @("TO"+ (index + 1))" id="@("TO"+ (index + 1))" placeholder="on">
+                </div>
+                <div class="col-3">
+                    <input type="text"  class="form-control  @("TKU"+ (index + 1))" id="@("TKU"+ (index + 1))" placeholder="kun">
+                </div>
+            </div>
+        }
+    }
+    <div class="d-flex justify-content-center">
+        <button type="button" style="margin:10px;" class="btn btn-success" id="btnSubmit">Submit</button>
+    </div>
+   
+
+</form>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        Init();
+
+    });
+    function Init() {
+      $("#btnSubmit").click(function () {
+          let kanJiAnswers = [];
+          for (var i = 1; i <= 50; i++) {
+            var kanJiId = $("#KanJiId" + i).val();
+            var hanViet = $("#THV" + i).val();
+            var mean = $("#TN" + i).val();
+            var amOn = $("#TO" + i).val();
+            var amKun = $("#TKU" + i).val();
+            var examFormId = $("#ExamFormId" + i).val();
+              var objKanJiAnswers = {
+                  HanViet: hanViet == null ? "" : hanViet ,
+                  VNMean: mean == null ? "" : mean,
+                  AmOn: amOn == null ? "" : amOn,
+                  AmKun: amKun == null ? "" : amKun,
+                  KanJiId: kanJiId == null ? "" : kanJiId,
+                  ExamFormId: examFormId == null ? "" : examFormId,
+            };
+              console.log(objKanJiAnswers);
+              kanJiAnswers.push(objKanJiAnswers);
+          }
+          console.log(kanJiAnswers);
+          var f = document.getElementsByTagName('form')[0];
+          if (kanJiAnswers.length > 0 && f.checkValidity()) {
+                   $.ajax({
+                    url: '@Url.Action("HandlerTestKanJi", "TestKanJiPerDay")',
+                    type: "post",
+                       data: { kanJiAnswers: kanJiAnswers },
+                    dataType: "json",
+                    // data: objectData,
+                    //contentType: "application/json; charset=utf-8",
+                       success: function (data) {
+                           $("#yourscore").text(data.score);
+                           $("#incorrectAnswer").text(data.incorrectQuestion);
+                           $("#totalQuestion").text(data.totalQuestion);
+                           $('#modal').modal('show')
+                    }
+                });
+          }
+          else {
+              alert("Vui lòng không bỏ trống câu trả lời !");
+          }
+        })
+    }
+
+</script>

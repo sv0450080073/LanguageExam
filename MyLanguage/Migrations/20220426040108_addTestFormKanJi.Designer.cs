@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyLanguage.Data;
 
 namespace MyLanguage.Migrations
 {
     [DbContext(typeof(MyLanguageDbContext))]
-    partial class MyLanguageDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220426040108_addTestFormKanJi")]
+    partial class addTestFormKanJi
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -71,64 +73,6 @@ namespace MyLanguage.Migrations
                     b.ToTable("ExamFormDetail");
                 });
 
-            modelBuilder.Entity("MyLanguage.Models.IncorrectAnswerForm", b =>
-                {
-                    b.Property<Guid>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("ExamDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("ExamForm_Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("UserName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("IncorrectAnswerForm");
-                });
-
-            modelBuilder.Entity("MyLanguage.Models.IncorrectAnswerFormDetail", b =>
-                {
-                    b.Property<Guid>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ExamFormDetail_Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("IncorrectAmHanViet")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("IncorrectAmKun")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("IncorrectAmOn")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("IncorrectAnswerForm_Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("IncorrectHiragana")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("IncorrectKanJiWord")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("IncorrectVietNamMean")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("KanJiID")
-                        .HasColumnType("int");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("IncorrectAnswerFormDetail");
-                });
-
             modelBuilder.Entity("MyLanguage.Models.KanJi", b =>
                 {
                     b.Property<int>("ID")
@@ -151,29 +95,6 @@ namespace MyLanguage.Migrations
                     b.HasKey("ID");
 
                     b.ToTable("KanJis");
-                });
-
-            modelBuilder.Entity("MyLanguage.Models.UserScores", b =>
-                {
-                    b.Property<Guid>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("ExamDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("ExamForm_ID")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<double>("Score")
-                        .HasColumnType("float");
-
-                    b.Property<string>("UserName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("UserScores");
                 });
 #pragma warning restore 612, 618
         }

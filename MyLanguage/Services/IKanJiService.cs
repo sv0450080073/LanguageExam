@@ -1,6 +1,7 @@
 ﻿using MyLanguage.Common;
 using MyLanguage.Data;
 using MyLanguage.Dtos;
+using MyLanguage.ManagerLog;
 using MyLanguage.Models;
 using SelectPdf;
 using System;
@@ -16,19 +17,23 @@ namespace MyLanguage.Services
         List<KanJi> GetKanJis();
         List<KanJi> SaveKanJis(List<KanJiDto> kanJis);
         List<KanJi> GetKanJisPDFByParamsSearch(ExportPDFOption paramSearch);
+        List<KanJi> GetKanJiByNumber(int nuberKanji);
         List<InMemoryFileDto> GeneratePDFZip(List<KanJi> kanJis, ExportPDFOption paramSearch, int testNumber = 0);
         public byte[] GenerateMutilPDFZip(List<KanJi> kanJis, ExportPDFOption paramSearch);
         public string GenerateBodyKanJiPDF(List<KanJi> kanJis, Answer answer, ExportPDFOption paramSearch);
         List<KanJi> FilterKanjs(List<KanJi> kanJis, Answer answer);
         bool IsExistKanJiInDb(KanJi kanJi);
 
+
     }
     public class KanJiService : IKanJiService
     {
         MyLanguageDbContext _dbContext = null;
-        public KanJiService(MyLanguageDbContext dbContext)
+        private readonly ILoggerManager _logger;
+        public KanJiService(MyLanguageDbContext dbContext, ILoggerManager logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
         public List<KanJi> GetKanJis()
         {
@@ -341,6 +346,25 @@ namespace MyLanguage.Services
              "</tr>" +
              "</table>";
             return htmlHeader;
+        }
+
+        public List<KanJi> GetKanJiByNumber(int nuberKanji)
+        {
+            var result = new List<KanJi>();
+            try
+            {
+                 result = (from kanji in _dbContext.KanJis
+                              orderby Guid.NewGuid()
+                              select kanji).Take(nuberKanji).ToList();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex.GetType(), $"GetKanJiByNumber Error: ", ex);
+                return result;
+               
+            }
+            
         }
 
         public class InMemoryFile

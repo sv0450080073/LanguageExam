@@ -21,6 +21,8 @@ namespace MyLanguage.Dtos
                 return KanJiNumber * TestNumber;
             }
         }
-        
+        public string TestAre { get; set; }
+
+
     }
 }

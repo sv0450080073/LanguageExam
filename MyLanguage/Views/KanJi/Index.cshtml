@@ -177,6 +177,15 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group row">
+                                    <label class="col-form-label col-4">Text box </label>
+                                    <textarea class="form-control col-2" id="areTest"></textarea>
+                                   
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -270,6 +279,9 @@
             var lvTo = $("#slcLevelTo").val();
             var useFor = $('input[name=useFor]:checked').val();
             var testNumber = $("#slcHowManyTest").val();
+            var testAre = $("#areTest").val();
+            console.log("-------------------------||-----------------------")
+            console.log(testAre)
             var objKanJiOptions = {
                 KanJiNumber: kanJiNumber,
                 IsAnswer: radioAnswer == "Yes" ? true : false,
@@ -277,7 +289,8 @@
                 LevelTo: lvTo,
                 UseFor: useFor,
                 TestNumber: testNumber,
-                IsHideKanJi: radioHideColumn == "hideKanJi" ? true : false
+                IsHideKanJi: radioHideColumn == "hideKanJi" ? true : false,
+                TestAre : testAre
             };
             console.log(objKanJiOptions);
             //var a = document.createElement("a");

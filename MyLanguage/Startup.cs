@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using MyLanguage.Data;
+using MyLanguage.ManagerLog;
 using MyLanguage.Services;
 using System;
 using System.Collections.Generic;
@@ -32,6 +33,8 @@ namespace MyLanguage
             optons.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<IKanJiService, KanJiService>();
+            services.AddScoped<ITestKanJiPerDayService, TestKanJiPerDayService>();
+            services.AddSingleton<ILoggerManager, LoggerManager>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -58,7 +61,7 @@ namespace MyLanguage
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=TestKanJiPerDay}/{action=Index}/{id?}");
             });
         }
     }
